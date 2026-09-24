@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Summit Sales Countdown</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --stage:#1936C4; --stage-deep:#0C1C80; --ink:#FFFFFF; --muted:rgba(255,255,255,.74);
+  --gold:#FFD23F; --pink:#FF4F81; --mint:#3DDC97; --panel:#0A1766; --line:rgba(255,255,255,.24);
+  --field:#081252;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --stage:#10259A; --stage-deep:#060E48; --panel:#07104A; --field:#040A33; }
+}
+:root[data-theme="dark"]{ --stage:#10259A; --stage-deep:#060E48; --panel:#07104A; --field:#040A33; }
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;height:100%;overflow:hidden;color:var(--ink);background:var(--stage-deep);
+  font-family:Figtree,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+.stage{
+  position:relative;height:100%;display:grid;grid-template-rows:auto 1fr auto;
+  background:radial-gradient(ellipse 70% 65% at 50% 42%,var(--stage) 0%,var(--stage-deep) 100%);
+}
+/* Spotlight beams */
+.stage::before,.stage::after{
+  content:"";position:absolute;top:-10%;width:40vw;height:120%;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,0) 70%);
+  filter:blur(8px);
+}
+.stage::before{left:8%;transform:rotate(14deg);clip-path:polygon(40% 0,60% 0,100% 100%,0 100%)}
+.stage::after{right:8%;transform:rotate(-14deg);clip-path:polygon(40% 0,60% 0,100% 100%,0 100%)}
+
+header{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:1.25rem 2rem}
+.title{font-family:"Big Shoulders Display",Impact,"Arial Narrow",sans-serif;font-weight:800;font-size:clamp(1.4rem,3vw,2.4rem);letter-spacing:.01em;margin:0}
+.keys{display:flex;gap:.9rem;flex-wrap:wrap;color:var(--muted);font-size:.85rem}
+.keys span{white-space:nowrap}
+kbd{font-family:inherit;font-weight:700;border:1px solid var(--line);border-radius:4px;padding:.05rem .4rem;margin-right:.3rem;color:var(--ink)}
+
+main{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;text-align:center;padding:0 1rem}
+.num{
+  font-family:"Big Shoulders Display",Impact,"Arial Narrow",sans-serif;font-weight:900;
+  font-size:min(40vw,58vh);line-height:.82;letter-spacing:-.01em;font-variant-numeric:tabular-nums;
+  text-shadow:0 .04em 0 var(--stage-deep),0 .08em .2em rgba(0,0,0,.35);
+  transition:color .3s;
+}
+.num.punch{animation:punch .38s cubic-bezier(.2,1.6,.4,1)}
+@keyframes punch{0%{transform:scale(1.09);color:var(--gold)}100%{transform:scale(1)}}
+.num.final{color:var(--gold);animation:beat 1s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.05)}30%{transform:scale(.99)}}
+.unit{font-family:"Big Shoulders Display",Impact,sans-serif;font-weight:600;font-size:clamp(1.4rem,4vw,3.2rem);margin:.6rem 0 1.6rem;color:var(--muted)}
+.progress{width:min(720px,86vw)}
+.bar{height:14px;border-radius:7px;background:rgba(255,255,255,.14);overflow:hidden}
+.fill{height:100%;width:0;border-radius:7px;background:linear-gradient(90deg,var(--mint),var(--gold));transition:width .5s cubic-bezier(.3,1.3,.5,1)}
+.ptext{margin-top:.55rem;font-size:clamp(.9rem,1.4vw,1.1rem);color:var(--muted);font-variant-numeric:tabular-nums}
+
+footer{position:relative;z-index:3;display:flex;justify-content:center;flex-wrap:wrap;gap:.6rem;padding:1.1rem 1rem 1.5rem;transition:opacity .3s}
+.clean footer{opacity:0}
+.clean footer:hover,.clean footer:focus-within{opacity:1}
+.clean .keys{visibility:hidden}
+button{
+  font:inherit;font-weight:700;font-size:1rem;color:var(--ink);cursor:pointer;
+  background:rgba(255,255,255,.1);border:1px solid var(--line);border-radius:999px;padding:.7rem 1.2rem;
+}
+button:hover{background:rgba(255,255,255,.18)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.go{background:var(--gold);color:#0A1766;border-color:var(--gold)}
+.go:hover{background:#ffe07a}
+.minus{background:var(--pink);border-color:var(--pink);font-size:1.15rem;padding:.7rem 1.6rem}
+.minus:hover{background:#ff7099}
+
+/* Celebration */
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5}
+.party{position:fixed;inset:0;z-index:4;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1rem;
+  background:radial-gradient(ellipse at center,rgba(255,79,129,.35),rgba(6,14,72,.2) 70%)}
+.party.on{display:flex}
+.party h2{margin:0;font-family:"Big Shoulders Display",Impact,sans-serif;font-weight:900;font-size:min(26vw,40vh);line-height:.85;color:var(--gold);
+  text-shadow:0 .05em 0 var(--pink),0 .1em .3em rgba(0,0,0,.4);animation:cheer 1.2s ease-in-out infinite}
+@keyframes cheer{0%,100%{transform:rotate(-3deg) scale(1)}50%{transform:rotate(3deg) scale(1.08)}}
+.party p{font-family:"Big Shoulders Display",Impact,sans-serif;font-weight:800;font-size:clamp(1.5rem,4.5vw,3.5rem);margin:1rem 0 2rem}
+.party button{position:relative;z-index:6}
+
+/* Settings */
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);padding:1.6rem;width:min(460px,92vw)}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+dialog h3{margin:0 0 1.2rem;font-family:"Big Shoulders Display",Impact,sans-serif;font-size:1.8rem;font-weight:800}
+label{display:block;font-weight:600;font-size:.92rem;margin-bottom:1rem}
+input[type=text],input[type=number]{display:block;width:100%;margin-top:.35rem;font:inherit;font-size:1.05rem;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:.6rem .7rem}
+.check{display:flex;gap:.6rem;align-items:center}
+.check input{width:1.2rem;height:1.2rem;accent-color:var(--gold)}
+.hint{font-weight:400;color:var(--muted);font-size:.82rem;display:block;margin-top:.3rem}
+.row{display:flex;gap:.6rem;justify-content:flex-end;flex-wrap:wrap;margin-top:1.4rem}
+
+@media (max-width:640px){ .keys{display:none} header{padding:1rem} }
+@media (prefers-reduced-motion:reduce){
+  .num.punch,.num.final,.party h2{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <header>
+    <h1 class="title" id="title">Summit sales goal</h1>
+    <div class="keys" aria-hidden="true">
+      <span><kbd>Space</kbd>minus one</span>
+      <span><kbd>P</kbd>play / pause</span>
+      <span><kbd>F</kbd>fullscreen</span>
+      <span><kbd>H</kbd>hide controls</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="num" id="num" aria-live="polite">100</div>
+    <div class="unit" id="unit">deals to go</div>
+    <div class="progress">
+      <div class="bar"><div class="fill" id="fill"></div></div>
+      <div class="ptext" id="ptext">0 of 100 down</div>
+    </div>
+  </main>
+
+  <footer>
+    <button class="go" id="play">Start countdown</button>
+    <button class="minus" id="minus" aria-label="Minus one">−1</button>
+    <button id="plus" aria-label="Plus one">+1</button>
+    <button id="reset">Reset</button>
+    <button id="openSettings">Settings</button>
+    <button id="full">Fullscreen</button>
+  </footer>
+</div>
+
+<div class="party" id="party" role="alert">
+  <h2>Goal!</h2>
+  <p id="partyText">We did it</p>
+  <button id="back">Back to countdown</button>
+</div>
+<canvas id="fx"></canvas>
+
+<dialog id="settings">
+  <form method="dialog" id="form">
+    <h3>Countdown settings</h3>
+    <label>Headline
+      <input type="text" id="fTitle" maxlength="80">
+    </label>
+    <label>Starting number
+      <input type="number" id="fStart" min="1" step="1" required>
+    </label>
+    <label>Label under the number
+      <input type="text" id="fUnit" maxlength="60">
+    </label>
+    <label>Count down every
+      <input type="number" id="fInterval" min="0.2" step="0.1" required>
+      <span class="hint">Seconds between automatic −1 ticks.</span>
+    </label>
+    <label class="check"><input type="checkbox" id="fSound"> Play sounds</label>
+    <div class="row">
+      <button value="cancel" formnovalidate>Cancel</button>
+      <button value="save" id="save">Save</button>
+      <button value="restart" class="go">Save and restart</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const KEY = 'summit-countdown-v1';
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const defaults = { title:'Summit sales goal', start:100, count:100, unit:'deals to go', interval:3, sound:true };
+  let state = { ...defaults };
+  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s) state = { ...defaults, ...s }; } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+
+  let running = false, timer = 0, celebrating = false, fanTimer = 0;
+
+  /* ---------- Audio (Web Audio, no files) ---------- */
+  let ac = null;
+  const audio = () => {
+    if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+    if (ac.state === 'suspended') ac.resume();
+    return ac;
+  };
+  function tone(freq, t, dur, type = 'sawtooth', vol = .16) {
+    const a = audio(); if (!a) return;
+    const o = a.createOscillator(), g = a.createGain(), f = a.createBiquadFilter();
+    o.type = type; o.frequency.value = freq;
+    f.type = 'lowpass'; f.frequency.value = 2600;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + .02);
+    g.gain.setValueAtTime(vol, t + dur * .7);
+    g.gain.exponentialRampToValueAtTime(.001, t + dur);
+    o.connect(f); f.connect(g); g.connect(a.destination);
+    o.start(t); o.stop(t + dur + .05);
+  }
+  function tick() {
+    if (!state.sound) return; const a = audio(); if (!a) return;
+    tone(state.count <= 10 ? 1320 : 880, a.currentTime, .07, 'triangle', .12);
+  }
+  function fanfare() {
+    if (!state.sound) return; const a = audio(); if (!a) return;
+    const t = a.currentTime + .05;
+    const G = 392, C = 523.25, E = 659.25, G5 = 783.99, C6 = 1046.5;
+    [[G,0,.15],[G,.17,.15],[G,.34,.15],[C,.51,.45],[G,1.0,.18],[C,1.2,.18],[E,1.4,.18],[G5,1.6,1.6]]
+      .forEach(([f,s,d]) => { tone(f, t+s, d); tone(f*2, t+s, d, 'square', .04); });
+    [C, E, G5, C6].forEach(f => tone(f, t + 1.6, 1.8, 'sawtooth', .07));
+    // snare roll-ish noise hits
+    for (let i = 0; i < 8; i++) {
+      const buf = a.createBuffer(1, a.sampleRate * .08, a.sampleRate), d = buf.getChannelData(0);
+      for (let j = 0; j < d.length; j++) d[j] = (Math.random()*2-1) * (1 - j/d.length);
+      const src = a.createBufferSource(), g = a.createGain(); src.buffer = buf; g.gain.value = .12;
+      src.connect(g); g.connect(a.destination); src.start(t + 1.6 + i * .09);
+    }
+  }
+  addEventListener('pointerdown', () => audio(), { once:true });
+
+  /* ---------- Rendering ---------- */
+  function render(punch) {
+    const n = $('num');
+    n.textContent = state.count.toLocaleString();
+    n.classList.toggle('final', state.count > 0 && state.count <= 10);
+    if (punch && !reduced) { n.classList.remove('punch'); void n.offsetWidth; n.classList.add('punch'); }
+    $('title').textContent = state.title;
+    document.title = state.title;
+    $('unit').textContent = state.unit;
+    const done = Math.max(0, state.start - state.count);
+    $('fill').style.width = Math.min(100, done / state.start * 100) + '%';
+    $('ptext').textContent = `${done.toLocaleString()} of ${state.start.toLocaleString()} down`;
+    $('play').textContent = running ? 'Pause' : (state.count < state.start && state.count > 0 ? 'Resume countdown' : 'Start countdown');
+    $('partyText').textContent = state.title;
+  }
+
+  function step(delta) {
+    const before = state.count;
+    state.count = Math.max(0, Math.min(state.start, state.count + delta));
+    if (state.count === before) return;
+    save();
+    if (delta < 0) tick();
+    render(true);
+    if (state.count === 0) { stop(); celebrate(); }
+    else if (celebrating) endCelebrate();
+  }
+  function play() {
+    if (state.count === 0) return;
+    running = true;
+    clearInterval(timer);
+    timer = setInterval(() => step(-1), Math.max(.2, state.interval) * 1000);
+    render();
+  }
+  function stop() { running = false; clearInterval(timer); render(); }
+  const toggle = () => running ? stop() : play();
+
+  /* ---------- Celebration ---------- */
+  const cv = $('fx'), cx = cv.getContext('2d');
+  let W = 0, H = 0, parts = [], raf = 0, lastBurst = 0;
+  const colors = ['#FFD23F','#FF4F81','#3DDC97','#FFFFFF','#5CC8FF'];
+  function size() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  addEventListener('resize', size); size();
+  function confetti(n) {
+    for (let i = 0; i < n; i++) parts.push({
+      k:'c', x:Math.random()*W, y:-20 - Math.random()*80, vx:(Math.random()-.5)*2.2, vy:2 + Math.random()*3.5,
+      w:7 + Math.random()*8, h:10 + Math.random()*12, r:Math.random()*6.28, vr:(Math.random()-.5)*.3,
+      c:colors[Math.floor(Math.random()*colors.length)]
+    });
+  }
+  function burst(x, y) {
+    const n = 80, c = colors[Math.floor(Math.random()*colors.length)];
+    for (let i = 0; i < n; i++) {
+      const a = Math.PI * 2 * i / n, s = 2.5 + Math.random() * 5;
+      parts.push({ k:'s', x, y, vx:Math.cos(a)*s, vy:Math.sin(a)*s, life:1, c: Math.random() < .7 ? c : '#FFFFFF' });
+    }
+  }
+  function loop(ts) {
+    cx.clearRect(0, 0, W, H);
+    if (celebrating) {
+      if (parts.length < (reduced ? 60 : 500)) confetti(reduced ? 1 : 7);
+      if (!reduced && ts - lastBurst > 650) { burst(W*(.12 + Math.random()*.76), H*(.1 + Math.random()*.4)); lastBurst = ts; }
+    }
+    parts = parts.filter(p => {
+      if (p.k === 'c') {
+        p.x += p.vx + Math.sin(p.y * .02) * .8; p.y += p.vy; p.r += p.vr;
+        cx.save(); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c;
+        const hh = p.h * Math.abs(Math.cos(p.r * 1.5)) + 1;
+        cx.fillRect(-p.w/2, -hh/2, p.w, hh); cx.restore();
+        return p.y < H + 40;
+      }
+      p.x += p.vx; p.y += p.vy; p.vy += .06; p.vx *= .985; p.life -= .013;
+      cx.globalAlpha = Math.max(0, p.life); cx.fillStyle = p.c;
+      cx.beginPath(); cx.arc(p.x, p.y, 2.6, 0, 6.283); cx.fill(); cx.globalAlpha = 1;
+      return p.life > 0;
+    });
+    raf = (celebrating || parts.length) ? requestAnimationFrame(loop) : 0;
+  }
+  function celebrate() {
+    if (celebrating) return;
+    celebrating = true;
+    $('party').classList.add('on');
+    fanfare();
+    clearInterval(fanTimer); fanTimer = setInterval(fanfare, 7000);
+    if (!raf) raf = requestAnimationFrame(loop);
+    $('back').focus();
+  }
+  function endCelebrate() {
+    celebrating = false; clearInterval(fanTimer);
+    $('party').classList.remove('on');
+  }
+
+  /* ---------- Controls ---------- */
+  $('play').onclick = toggle;
+  $('minus').onclick = () => step(-1);
+  $('plus').onclick = () => step(1);
+  $('reset').onclick = () => { stop(); endCelebrate(); state.count = state.start; save(); render(); };
+  $('back').onclick = () => { endCelebrate(); state.count = Math.min(state.start, 1); save(); render(); };
+  const fullscreen = () => {
+    if (document.fullscreenElement) document.exitFullscreen?.();
+    else document.documentElement.requestFullscreen?.().catch(() => {});
+  };
+  $('full').onclick = fullscreen;
+
+  const dlg = $('settings');
+  $('openSettings').onclick = () => {
+    $('fTitle').value = state.title; $('fStart').value = state.start; $('fUnit').value = state.unit;
+    $('fInterval').value = state.interval; $('fSound').checked = state.sound;
+    dlg.showModal();
+  };
+  dlg.addEventListener('close', () => {
+    const v = dlg.returnValue; if (v !== 'save' && v !== 'restart') return;
+    state.title = $('fTitle').value.trim() || defaults.title;
+    state.unit = $('fUnit').value.trim();
+    state.start = Math.max(1, Math.round(+$('fStart').value) || defaults.start);
+    state.interval = Math.max(.2, +$('fInterval').value || defaults.interval);
+    state.sound = $('fSound').checked;
+    if (v === 'restart') { endCelebrate(); state.count = state.start; stop(); }
+    else { state.count = Math.min(state.count, state.start); if (running) play(); }
+    save(); render();
+  });
+
+  addEventListener('keydown', e => {
+    if (dlg.open || e.target.matches('input, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = e.key.toLowerCase();
+    if (e.code === 'Space' || k === 'arrowdown') { e.preventDefault(); step(-1); }
+    else if (k === 'arrowup') { e.preventDefault(); step(1); }
+    else if (k === 'p') toggle();
+    else if (k === 'f') fullscreen();
+    else if (k === 'h') document.body.classList.toggle('clean');
+  });
+
+  addEventListener('keyup', e => {
+    if (e.code === 'Space' && e.target.tagName === 'BUTTON' && !dlg.open) e.preventDefault();
+  });
+
+  render();
+  if (state.count === 0) celebrate();
+})();
+</script>
+</body>
+</html>
